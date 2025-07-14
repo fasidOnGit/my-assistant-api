@@ -9,7 +9,7 @@ const app = new Hono<{ Bindings: Env }>();
 
 app.use('*', cors);
 
-app.post('/ingest', async (c: Context<{ Bindings: Env }>) => {
+app.post('/ingest-profile', async (c: Context<{ Bindings: Env }>) => {
   try {
     const formData = await c.req.formData();
     const files = formData.getAll('files') as File[];
