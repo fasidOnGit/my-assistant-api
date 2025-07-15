@@ -4,7 +4,7 @@ import { PersonalInfo } from '@/types';
 import { Pinecone } from '@pinecone-database/pinecone';
 import { uniqBy } from 'lodash-es';
 
-const CHUNK_SIZE = 500;
+const CHUNK_SIZE = 512;
 const CHUNK_OVERLAP = 80;
 const BATCH_SIZE = 100;
 
@@ -60,27 +60,30 @@ export async function createChunks(args: { userId: string; fileName: string; tex
 }
 
 export async function processTextFile(
-	pineconeIndex: PineconeDocumentIndex,
 	args: {
+		sparseIndex: PineconeDocumentIndex;
+		denseIndex: PineconeDocumentIndex;
 		userId: string;
 		fileName: string;
 		text: string;
 		email: string;
 	}
 ) {
-	const { userId, fileName, text, email } = args;
+	const { sparseIndex, denseIndex, userId, fileName, text, email } = args;
 
-	// First split by Markdown headers
-	const chunked = await createChunks({ userId, fileName, text, email });
+	// Create chunks from the text
+	const chunks = await createChunks({ userId, fileName, text, email });
 
-	for (let i = 0; i < chunked.length; i += BATCH_SIZE) {
-		const batch = chunked.slice(i, i + BATCH_SIZE);
-		console.log('Upserting batch', batch);
-		await pineconeIndex.upsertRecords(batch);
-		console.log('Batch upserted', batch);
+	// Upsert chunks to both indexes in batches
+	for (let i = 0; i < chunks.length; i += BATCH_SIZE) {
+		const batch = chunks.slice(i, i + BATCH_SIZE);
+		await Promise.all([
+			sparseIndex.upsertRecords(batch),
+			denseIndex.upsertRecords(batch)
+		]);
 	}
 
-	return chunked.length;
+	return chunks.length;
 }
 
 export async function procesTextHybrid(params: {
@@ -124,27 +127,28 @@ export async function procesTextHybrid(params: {
 export async function embedFiles(args: { files: File[]; personalInfo: PersonalInfo; env: Cloudflare.Env }) {
 	const { files, personalInfo, env } = args;
 
-	// Initialize Pinecone and process files
+	// Initialize Pinecone client
 	const pinecone = createPineconeClient(env);
+	
+	// Initialize indexes and clear existing data
 	const sparseIndex = initializePineconeIndex(pinecone, 'documents-sparse');
 	const denseIndex = initializePineconeIndex(pinecone, 'documents');
 	await Promise.all([sparseIndex.deleteAll(), denseIndex.deleteAll()]);
 
+	// Process each file
 	return await Promise.all(
 		files.map(async (file) => {
 			console.log('Processing file', file.name);
 			const text = await file.text();
-			const [chunksCount] = await Promise.all(
-				[sparseIndex, denseIndex].map(
-					async (index) =>
-						await processTextFile(index, {
-							fileName: file.name,
-							text,
-							userId: personalInfo.email,
-							email: personalInfo.email,
-						})
-				)
-			);
+			const chunksCount = await processTextFile({
+				sparseIndex,
+				denseIndex,
+				fileName: file.name,
+				text,
+				userId: personalInfo.email,
+				email: personalInfo.email,
+			});
+
 			return {
 				fileName: file.name,
 				chunksProcessed: chunksCount,
