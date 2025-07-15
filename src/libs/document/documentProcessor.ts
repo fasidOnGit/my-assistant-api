@@ -3,6 +3,7 @@ import { createPineconeClient, initializePineconeIndex, PineconeDocumentIndex } 
 import { PersonalInfo } from '@/types';
 import { Pinecone } from '@pinecone-database/pinecone';
 import { uniqBy } from 'lodash-es';
+import { createDocumentChunks } from './textProcessingUtils';
 
 const CHUNK_SIZE = 512;
 const CHUNK_OVERLAP = 80;
@@ -59,28 +60,29 @@ export async function createChunks(args: { userId: string; fileName: string; tex
 	}));
 }
 
-export async function processTextFile(
-	args: {
-		sparseIndex: PineconeDocumentIndex;
-		denseIndex: PineconeDocumentIndex;
-		userId: string;
-		fileName: string;
-		text: string;
-		email: string;
-	}
-) {
+/**
+ * Process a text file and upsert the chunks to both indexes.
+ * This is a hybrid approach that uses both sparse and dense embeddings.
+ * @param args - The arguments for the function
+ * @returns The number of chunks processed
+ */
+export async function processTextFile(args: {
+	sparseIndex: PineconeDocumentIndex;
+	denseIndex: PineconeDocumentIndex;
+	userId: string;
+	fileName: string;
+	text: string;
+	email: string;
+}) {
 	const { sparseIndex, denseIndex, userId, fileName, text, email } = args;
 
 	// Create chunks from the text
-	const chunks = await createChunks({ userId, fileName, text, email });
+	const chunks = await createDocumentChunks({ text, metadata: { userId, fileName, email } });
 
 	// Upsert chunks to both indexes in batches
 	for (let i = 0; i < chunks.length; i += BATCH_SIZE) {
 		const batch = chunks.slice(i, i + BATCH_SIZE);
-		await Promise.all([
-			sparseIndex.upsertRecords(batch),
-			denseIndex.upsertRecords(batch)
-		]);
+		await Promise.all([sparseIndex.upsertRecords(batch), denseIndex.upsertRecords(batch)]);
 	}
 
 	return chunks.length;
@@ -129,7 +131,7 @@ export async function embedFiles(args: { files: File[]; personalInfo: PersonalIn
 
 	// Initialize Pinecone client
 	const pinecone = createPineconeClient(env);
-	
+
 	// Initialize indexes and clear existing data
 	const sparseIndex = initializePineconeIndex(pinecone, 'documents-sparse');
 	const denseIndex = initializePineconeIndex(pinecone, 'documents');
@@ -162,19 +164,6 @@ export async function searchQueriesHybrid(params: { pinecone: Pinecone; query: s
 
 	const sparseIndex = initializePineconeIndex(pinecone, 'documents-sparse');
 	const denseIndex = initializePineconeIndex(pinecone, 'documents');
-	console.log("Searching sparse index")
-
-	console.log(
-		await denseIndex.searchRecords({
-			query: {
-				inputs: { text: query },
-				topK: 20,
-			},
-		})
-	);
-
-	console.log("Searching dense index")
-
 
 	const [sparseResults, denseResults] = await Promise.all([
 		sparseIndex.searchRecords({
@@ -194,7 +183,7 @@ export async function searchQueriesHybrid(params: { pinecone: Pinecone; query: s
 	// Deduplicate results based on id using uniqBy
 	const merged = uniqBy([...denseResults.result.hits, ...sparseResults.result.hits], '_id');
 	const reranked = await pinecone.inference.rerank(
-		"bge-reranker-v2-m3",
+		'bge-reranker-v2-m3',
 		query,
 		merged.map((hit) => hit.chunk_text),
 		{
@@ -203,7 +192,7 @@ export async function searchQueriesHybrid(params: { pinecone: Pinecone; query: s
 		}
 	);
 
-	reranked.data
+	reranked.data;
 	return {
 		results: reranked.data,
 		sparseResults,
