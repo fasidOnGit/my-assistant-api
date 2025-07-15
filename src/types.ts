@@ -17,7 +17,7 @@ export interface PersonalInfo {
 export interface Document {
 	id: number;
 	created_at: string;
-	content: string;
+	text: string;
 	embedding: number[];
 	similarity?: number;
 }

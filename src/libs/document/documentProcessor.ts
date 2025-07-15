@@ -8,13 +8,13 @@ const CHUNK_SIZE = 500;
 const CHUNK_OVERLAP = 80;
 const BATCH_SIZE = 100;
 
-export async function createChunks(args: { userId: string; fileName: string; content: string; email: string }) {
-	const { userId, fileName, content, email } = args;
+export async function createChunks(args: { userId: string; fileName: string; text: string; email: string }) {
+	const { userId, fileName, text, email } = args;
 
 	// First split by Markdown headers
 	const headerSplitter = new MarkdownTextSplitter();
 	const headerDocs = await headerSplitter.createDocuments(
-		[content],
+		[text],
 		[
 			{
 				fileName,
@@ -52,7 +52,7 @@ export async function createChunks(args: { userId: string; fileName: string; con
 		...doc.metadata,
 		loc: [String(doc.metadata.loc.lines.from), String(doc.metadata.loc.lines.to)],
 		chunk: i,
-		content: doc.pageContent.slice(0, 100),
+		text: doc.pageContent.slice(0, 100),
 		fileName,
 		userId,
 		email,
@@ -64,14 +64,14 @@ export async function processTextFile(
 	args: {
 		userId: string;
 		fileName: string;
-		content: string;
+		text: string;
 		email: string;
 	}
 ) {
-	const { userId, fileName, content, email } = args;
+	const { userId, fileName, text, email } = args;
 
 	// First split by Markdown headers
-	const chunked = await createChunks({ userId, fileName, content, email });
+	const chunked = await createChunks({ userId, fileName, text, email });
 
 	for (let i = 0; i < chunked.length; i += BATCH_SIZE) {
 		const batch = chunked.slice(i, i + BATCH_SIZE);
@@ -88,12 +88,12 @@ export async function procesTextHybrid(params: {
 	pinecone: Pinecone;
 	userId: string;
 	fileName: string;
-	content: string;
+	text: string;
 	email: string;
 }) {
-	const { pineconeIndex, pinecone, userId, fileName, content, email } = params;
+	const { pineconeIndex, pinecone, userId, fileName, text, email } = params;
 
-	const chunks = await createChunks({ userId, fileName, content, email });
+	const chunks = await createChunks({ userId, fileName, text, email });
 
 	const chunkTexts = chunks.map((chunk) => chunk.chunk_text);
 
@@ -133,13 +133,13 @@ export async function embedFiles(args: { files: File[]; personalInfo: PersonalIn
 	return await Promise.all(
 		files.map(async (file) => {
 			console.log('Processing file', file.name);
-			const content = await file.text();
+			const text = await file.text();
 			const [chunksCount] = await Promise.all(
 				[sparseIndex, denseIndex].map(
 					async (index) =>
 						await processTextFile(index, {
 							fileName: file.name,
-							content,
+							text,
 							userId: personalInfo.email,
 							email: personalInfo.email,
 						})
@@ -158,36 +158,50 @@ export async function searchQueriesHybrid(params: { pinecone: Pinecone; query: s
 
 	const sparseIndex = initializePineconeIndex(pinecone, 'documents-sparse');
 	const denseIndex = initializePineconeIndex(pinecone, 'documents');
+	console.log("Searching sparse index")
+
+	console.log(
+		await denseIndex.searchRecords({
+			query: {
+				inputs: { text: query },
+				topK: 20,
+			},
+		})
+	);
+
+	console.log("Searching dense index")
+
 
 	const [sparseResults, denseResults] = await Promise.all([
 		sparseIndex.searchRecords({
 			query: {
-				inputs: { content: query },
+				inputs: { text: query },
 				topK: 20,
 			},
 		}),
 		denseIndex.searchRecords({
 			query: {
-				inputs: { content: query },
+				inputs: { text: query },
 				topK: 20,
 			},
 		}),
 	]);
 
 	// Deduplicate results based on id using uniqBy
-	const merged = uniqBy([...sparseResults.result.hits, ...denseResults.result.hits], 'id');
-	pinecone.inference.rerank(
+	const merged = uniqBy([...denseResults.result.hits, ...sparseResults.result.hits], '_id');
+	const reranked = await pinecone.inference.rerank(
 		"bge-reranker-v2-m3",
 		query,
-		merged.map((hit) => hit.content),
+		merged.map((hit) => hit.chunk_text),
 		{
 			returnDocuments: true,
-			rankFields: ['content'],
 			topN: 20,
 		}
 	);
 
+	reranked.data
 	return {
+		results: reranked.data,
 		sparseResults,
 		denseResults,
 	};
