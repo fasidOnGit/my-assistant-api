@@ -1,0 +1,27 @@
+{
+  "name": "Kader Mohideen Fasid",
+  "title": [
+    "Senior Software Engineer - FullStack",
+    "Frontend Engineer",
+    "Backend Engineer",
+    "FullStack Engineer",
+    "Software Engineer",
+    "Web Developer",
+    "Mobile Developer",
+    "GenAI Engineer",
+    "AI Engineer",
+    "AI Developer",
+    "Product Engineer"
+  ],
+  "email": "fasidmpm@gmail.com",
+  "phone": "+971509732114",
+  "location": "Dubai, UAE",
+  "linkedin": "https://linkedin.com/in/kaderfasid",
+  "github": "https://github.com/fasidOnGit",
+  "kaggle": "https://kaggle.com/kadermohideenfasid",
+  "education": {
+    "institution": "Vellore Institute of Technology",
+    "degree": "Master of Science - Computer Software Engineering",
+    "years": "2011 - 2016"
+  }
+}

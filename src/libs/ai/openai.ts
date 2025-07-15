@@ -1,17 +1,16 @@
 import { OpenAI } from 'openai';
-import type { Env } from '../../types';
 import { configurations } from './configurations';
 
 const OPENAI_BASE_URL = 'https://gateway.ai.cloudflare.com/v1/0c3eee58953174451139be1ea94076a8/stock-predictions/openai';
 
-export function createOpenAIClient(env: Env) {
+export function createOpenAIClient(env: Cloudflare.Env) {
 	return new OpenAI({
 		apiKey: env.OPENAI_API_KEY,
 		baseURL: OPENAI_BASE_URL,
 	});
 }
 
-export async function createEmbedding(text: string, env: Env): Promise<number[]> {
+export async function createEmbedding(text: string, env: Cloudflare.Env): Promise<number[]> {
 	const openai = createOpenAIClient(env);
 
 	const response = await openai.embeddings.create({

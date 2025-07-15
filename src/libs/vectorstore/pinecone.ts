@@ -1,10 +1,9 @@
 import { Index, Pinecone } from '@pinecone-database/pinecone';
-import type { Env } from '../../types';
 
-export function createPineconeClient(env: Env) {
+export function createPineconeClient(env: Cloudflare.Env) {
 	return new Pinecone({
 		apiKey: env.PINECONE_API_KEY,
-		controllerHostUrl: 'https://gateway.ai.cloudflare.com/v1/0c3eee58953174451139be1ea94076a8/my-assistant-pinceone-gateway/',
+		// controllerHostUrl: CLOUDFLARE_AI_GATEWAY_PINCEONE,
 	});
 }
 
@@ -12,9 +11,8 @@ export type PineconeDocumentMetadata = { userId: string; fileName: string };
 
 export type PineconeDocumentIndex = Index<PineconeDocumentMetadata>;
 
-export async function initializePineconeIndex(env: Env): Promise<PineconeDocumentIndex> {
-	const pinecone = createPineconeClient(env);
-	const indexName = 'documents';
+export function initializePineconeIndex(pinecone: Pinecone, indexName: string = "documents"): PineconeDocumentIndex {
+	console.log('Initializing Pinecone index');
 
 	return pinecone.index<PineconeDocumentMetadata>(indexName);
 }

@@ -1,0 +1,56 @@
+[TYPE: Project]
+[CATEGORY: Frontend]
+[TAGS: frontend, Angular, e-commerce, UI/UX, admin portal, storefront, modular architecture, micro-frontend, widget builder, design system]
+
+## interesting project | frontend | design
+
+### Project Title
+E-Commerce Platform with Modular Architecture
+
+### Project Overview
+This project involved building a comprehensive e-commerce platform designed to serve multiple merchants, each with their own storefront. The platform was developed to provide merchants with an easy-to-use admin portal for managing products, categories, and orders, while offering customers an engaging storefront experience.
+
+### Dual Application Structure
+The platform consisted of two main applications:
+
+1. **Admin Portal**: Allowed merchants to manage their product listings, categories, and orders. It served as the control center for all merchant operations.
+
+2. **Storefront**: A customer-facing application where customers could browse products, add them to their cart, and place orders. Orders placed here were reflected in the admin portal for processing.
+
+### Unified Codebase with Nx
+To avoid redundancy and ensure consistency across both apps, the project was architected using **Nx**, a monorepo tool. This allowed for a modular structure, where common features and business logic were encapsulated into reusable libraries. These libraries ensured any feature developed once could be reused in both applications without duplication.
+
+### Tech Stack
+- **Front-End**: Angular, NgRx (state management), Angular Material (UI components)  
+- **Monorepo**: Nx for modular and scalable codebase  
+- **Cloud Storage**: Amazon S3
+
+### Modular Libraries
+The use of Nx enabled the creation of multiple domain-specific libraries:
+- **Product Library**
+- **Cart Library**
+- **Order Library**
+- **Category Library**
+
+These ensured code reusability and consistency across the admin portal and storefront. Any update to these libraries would reflect instantly in both applications.
+
+### Micro-Frontend Architecture
+To support merchant customization, a micro-frontend architecture with a **widget-based system** was used. Merchants could customize their landing pages via drag-and-drop widgets. Configurations were stored as JSON and hosted on **Amazon S3**, making the storefront highly flexible and merchant-specific.
+
+The same landing page could be:
+- Edited in the admin portal
+- Rendered in the storefront  
+This provided a **unified, customizable experience**.
+
+### Common Component Library
+To maintain a consistent design, a shared **UI component library** was created and used across both apps. This ensured:
+- Visual consistency
+- Easier maintenance
+- Faster development
+
+### Summary
+**Domain**: E-commerce, multi-tenant platforms, modular UI, frontend  
+**Architecture**: Monorepo with Nx, micro-frontends, shared libraries  
+**Tech Stack**: Angular, NgRx, Angular Material, S3
+**Key Features**: Admin portal, storefront, widget-based landing page builder  
+**Outcome**: Scalable, maintainable, and merchant-customizable platform

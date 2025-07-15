@@ -1,0 +1,79 @@
+### Title
+Kader Mohideen Fasid | Senior Software Engineer - FullStack
+
+### Professional Summary
+Senior Software Engineer with 9+ years of experience building scalable web applications using modern JavaScript frameworks. Expertise in front-end development with React, Angular, and TypeScript, complemented by full-stack capabilities. Strong focus on clean, maintainable code, automated testing, and performance optimization. Experienced in remote collaboration across international time zones and AI-enhanced development workflows.
+
+### Core Skills & Technologies.
+Javascript, Typescript, React.js, Angular, Node.js, HTML/CSS, RESTful APIs.
+
+### Frontend:
+React.js, Angular, Typescript,HTML5, CSS3/SCSS, Redux, NgRx, Storybook
+
+### Mobile:
+Ionic Capacitor, React Native, Flutter
+
+### Backend:
+Node.js, NestJS, RESTful APIs, JSON:API, RSQL, PostgreSQL, MySQL, MongoDB
+
+### Cloud & DevOps:
+AWS (SQS, Event Bridge, Fargate), Docker, Kubernetes, CI/CD, GitHub Actions, Jenkins
+
+### Testing:
+Jest, Vitest, Selenium, Puppeteer, Playwright, TDD (Classist, Bottom-up), BDD
+
+### Monitoring & Observability:
+Datadog, Chrome DevTools, MongoDB Query Profiler, Performance Monitoring, Error Tracking
+
+### Tools & Others:
+Git, NGINX, Terraform, Ansible, LaunchDarkly
+
+### Certifications
+CutShort Certified Javascript - Advanced
+
+### Key Strengths
+Frontend Expertise: Mastery of JavaScript, TypeScript, HTML, CSS, and frameworks like React and Angular
+Scalable Architecture: Designs clean, modular, and maintainable systems suited for large-scale applications
+Performance Optimization: Improves load times, responsiveness, and runtime efficiency
+Testing & Code Quality: Writes robust, testable code with solid unit, integration, and end-to-end coverage
+Customer-Centric Mindset: Builds features with empathy for the end user, prioritizing usability and accessibility
+Product-Oriented Thinking: Understands business goals and aligns technical decisions to drive product impact
+Collaboration Across Functions: Works closely with design, backend, QA, and product to ship cohesive features
+Mentorship & Leadership: Guides teammates through code reviews, technical direction, and knowledge sharing
+
+### Professional Experience
+
+Company Name: Clipboard Health | Role: Senior Software Engineer | Duration: Dec 2022 - Present (2 years) | Location: Dubai, UAE (Remote)
+- Refactored Attendance Algorithm reducing false detections by 54% and improving accuracy across 78% of trips
+- Authored comprehensive Urgent Shifts documentation, becoming the primary reference for cross-functional teams
+- Resynced 10,000+ Zendesk user records via parallelized Node.js tools, eliminating data mismatches
+- Built Datadog dashboard for Zendesk integrations providing end-to-end observability and monitoring
+- Led Zendesk Knowledge Base SSO integration for mobile apps across multiple platforms
+- Created automated Hex.app reporting workflows querying Snowflake for UKG Pro-ready reports
+- Served as Engineering Manager for Team Value, enhancing collaboration and communication
+- Optimized MongoDB queries using Aggregation Framework and compound indexes for improved performance
+
+Company Name: Proemion - Telematics Solutions | Role: Software Engineer - Frontend | Duration: Sep 2018 - Dec 2022 (4 years) | Location: Remote
+
+- Led AngularJS to Angular migration effort as core contributor in component-by-component approach
+- Migrated to Nx Monorepo from Angular CLI, reducing build time by 75% with computation caching
+- Contributed to team-built design system development including Storybook implementation
+- Maintained PR review system with short-lived playground URLs using Ansible, Nginx, Docker, Rundeck
+- Optimized integration tests targeting local dev server enabling effective BDD practices
+- Implemented user-locking functionality for multi-tenant application across frontend and DevOps
+
+Company Name: IQ Fullfilment | Role: Technical Lead - Frontend | Duration: Sep 2020 - Mar 2021 (7 months) | Location: Dubai, UAE
+
+- Built EaaS (Ecommerce as a Service) application MVP from scratch using Nx monorepo architecture
+- Developed two standalone Angular applications sharing common functionalities through Nx libraries
+- Implemented NgRx with entity and Facade patterns for efficient code reuse and state management
+- Deployed comprehensive CI/CD pipeline on AWS infrastructure
+- Led code reviews, epic writing, and mentored junior developers
+
+Company Name: Tata Consultancy Services | Role: Assistant System Engineer | Duration: Jun 2016 - Aug 2018 (2 years) | Location: Chennai, India
+
+- Developed full-stack JavaScript applications using Angular and React frameworks
+- Created automation scripts using Node.js for various system processes
+- Implemented CI/CD pipelines using Jenkins and Ansible for deployment automation
+- Coached the team on Digital Technologies to increase the Team's technical posture on Digital Transformation projects
+

@@ -1,8 +1,17 @@
-export interface Env {
-	OPENAI_API_KEY: string;
-	SUPABASE_URL: string;
-	SUPABASE_ANON_KEY: string;
-	PINECONE_API_KEY: string;
+export interface PersonalInfo {
+	name: string;
+	title: string[];
+	email: string;
+	phone: string;
+	location: string;
+	linkedin?: string;
+	github?: string;
+	kaggle?: string;
+	education: {
+		institution: string;
+		degree: string;
+		years: string;
+	};
 }
 
 export interface Document {

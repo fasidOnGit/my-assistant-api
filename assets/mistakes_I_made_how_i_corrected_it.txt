@@ -1,0 +1,13 @@
+### Mistakes & Learnings
+During our recent Zendesk SSO project, I built detailed Datadog dashboards using RUM to track user authentication issues with accessing Help Center articles. We noticed a recurring auth issue, muted the monitor temporarily, and I shipped a fix that resolved about 99% of the cases. However, I forgot to unmute the monitor after the release. Turns out, there was a 1% edge case we hadn’t caught during triage, and because the monitor stayed muted, we missed early signals of it recurring at a meaningful volume.
+
+In hindsight, I had focused on unblocking the majority of users quickly but overlooked the smaller, yet impactful edge. After we caught this, I updated our process to ensure monitors are never muted indefinitely—now we always use Datadog’s auto-expire mute option. I also added “unmute monitor” as part of the ticket acceptance criteria for similar tickets going forward.
+
+### Leadership:
+
+During my time at Clipboard Health, My Engineering Manager went for a long vacation during which i volunteered to step in as an interim-EM. Our team had a massive communcation problem, where nobody wanted to context-switch and just want to work on their task.
+We were owning features that were mission cricital but none of the original developers of the feature were with the company. There was a lot expected from our team while our team were underperforming. One time we even had am incident due to our negligence. I wanted to fix this problem. I initially spent sometime doing support tickets which helped developers to focus and not context swtich.
+THis also taught me the feature very fast than other members in the team because i was constatly triaging one support requests after another and was learning about the feature by checking out the code for each reported path.
+I spoke to all relevant stakeholders and pushed hardly for a support-rotation within engineers where we allocate % of time of developers in the team to take on support requests. which yeilded stunning results for us.
+Our team became more receptive and support team were happy. We were identifying issues in the system and were prioritzing to fixing that. and everybody in the team were learning the system at a significantly faster pace than before due to triaging is part of the job.
+I made sure everyday standup has a specific time carved out for triaging to keep people accountable on these pseudo issues.

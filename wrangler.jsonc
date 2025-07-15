@@ -13,6 +13,12 @@
 		"nodejs_compat"
 	  ],
 	"compatibility_date": "2024-09-23",
+	"kv_namespaces": [
+		{
+		"binding": "users",
+		"id": "bcfcca00a0cb4a499d9943ffc1e2a929"
+		}
+	]
 	/**
 	 * Smart Placement
 	 * Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement

@@ -20,6 +20,9 @@
 		"@pinecone-database/pinecone": "^6.1.1",
 		"hono": "^4.8.5",
 		"langchain": "^0.3.29",
-		"openai": "^5.9.0"
+		"lodash": "^4.17.21",
+		"lodash-es": "^4.17.21",
+		"openai": "^5.9.0",
+		"save": "^2.9.0"
 	}
 }

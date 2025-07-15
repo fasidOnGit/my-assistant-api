@@ -1,0 +1,95 @@
+[TYPE: Project]
+[CATEGORY: Backend]
+[TAGS: backend, attendance algorithm, healthcare, geolocation, no-call no-show, real-time tracking, hybrid detection, radar SDK, system design, monitoring, datadog, shift staffing, urgent shift, operational reliability]
+
+## challenging project | toughest problem | backend
+
+### Project Title
+Redesigning the Attendance Tracking Algorithm for High-Stakes Staffing Scenarios
+
+### Context & Problem Statement
+One of the most impactful and technically challenging projects I contributed to was the redesign of an attendance tracking algorithm within a digital healthcare staffing marketplace. The platform connects healthcare professionals (HCPs) with facilities in need of shift coverage. A critical problem surfaced around "no-call no-show" (NCNS) behavior, which often left healthcare facilities under-staffed at the last minute, sometimes during time-sensitive or critical care shifts.
+
+To mitigate such risks, the system incorporated a real-time attendance monitoring service. However, it initially produced excessive false positives due to noisy, sparse, or incomplete location signals—particularly in the final hour before a shift. This caused undue operational escalations, leading to unnecessary outreach efforts, incorrect no-show penalties, and suboptimal worker experience.
+
+### My Role
+I led the redesign of the core attendance tracking algorithm. My responsibilities included:
+
+- Deeply analyzing false-positive scenarios in the existing pipeline.
+- Rethinking and rewriting core logic around location inference.
+- Implementing a hybrid detection approach to balance speed and accuracy.
+- Leading documentation and cross-functional communication.
+- Ensuring reliability and interpretability for downstream teams: Operations, Strategy, Product, and Engineering.
+
+### System Overview
+The attendance tracking service is responsible for evaluating a worker's likelihood of attending a shift based on real-time trip and location data. If the system determines with high confidence that a worker is unlikely to show up, the associated shift is marked as Urgent (`urgency:1`), triggering downstream processes like dynamic pricing, unassignment, worker notifications, and facility alerts.
+
+This attendance layer integrates with:
+- **Radar SDK**: for trip and geofence tracking.
+- **Main Backend Monolith**: for shift assignment, cancellation, and Pub/Sub events.
+- **Urgent Shifts Microservice**: which handles reassignments and publishes urgent shifts to workers.
+- **Attendance Policy Service**: which applies attendance score penalties based on NCNS determinations.
+
+### Hybrid Movement Detection Strategy
+
+As part of the redesign, we explored two different strategies for detecting worker movement using real-time location data:
+
+1. **Eager Approach**: Continuously evaluated the most recent 7 location data points in real time—triggering checks as soon as a new data point arrived. It allowed fast responsiveness, especially useful for detecting resumed motion after a pause.
+
+2. **Bucketed Approach**: Grouped location updates into 2-minute time buckets and evaluated motion patterns using 7 historical data points per bucket. Designed to suppress noise and improve accuracy during inactivity or sparse data.
+
+### Why Keep Both?
+
+While the bucketed approach significantly reduced false positives when a healthcare professional (HCP) became stationary, it introduced latency when detecting resumed movement. This delay sometimes resulted in premature flagging of a shift as a no-show, even though the worker had started moving again—causing confusion and unnecessary escalations.
+
+To address this, we implemented a hybrid model:
+
+- The eager path prioritized responsiveness for resumed motion.
+- The bucketed path prioritized reliability for detecting stationary behavior.
+
+This allowed us to strike a balance between speed and accuracy, minimizing both false negatives and false positives.
+
+### Shadow Mode Evaluation
+
+Before fully launching the bucketed model, I deployed it in shadow mode using Datadog Notebooks:
+
+- Bucketed logic executed in parallel with no user impact.
+- Logs captured discrepancies between eager and bucketed outcomes.
+- We analyzed false positive/negative rates, time-to-detection metrics, and edge case scenarios.
+
+After gaining confidence in its reliability, we launched the bucketed strategy in production alongside the eager path. I also:
+
+- Instrumented Datadog dashboards and monitors to track anomalies and surface metrics.
+- Enabled alerting for unexpected behavior transitions or missed detections.
+
+### Results & Outcomes
+
+- 54% reduction in false stationary detections.
+- 78% improvement in trip accuracy for detecting true no-shows.
+- Fewer escalations and improved trust in the system by the Ops team.
+- Reduction in incorrect penalties and smoother experience for workers.
+
+### Documentation & Enablement
+
+I authored and maintained comprehensive documentation covering:
+
+- Architecture and flow diagrams.
+- Eligibility conditions for attendance tracking.
+- Configuration thresholds and fallback logic.
+- Debugging guides and triage procedures.
+
+This documentation was actively used by:
+
+- Engineering: for incident response and iteration.
+- Operations: to understand flags and penalties.
+- Product/Strategy: to evaluate effectiveness metrics.
+
+### Summary
+
+**Domain:** Real-time location tracking, staffing reliability, healthcare shifts, backend
+**Entities:** HCP (worker), shift, trip, ETA, urgency, NCNS  
+**Tech Stack:** TypeScript, MongoDB, Pub/Sub, Datadog, Radar SDK, Braze  
+**Architecture:** Event-driven, hybrid evaluation models  
+**Success Metrics:** False positive rate, trip accuracy, refill rate  
+**Features:** Shadow mode rollout, dual-path detection, monitor dashboards  
+**Stakeholders:** Product, Ops, Strategy, Engineering, Support
