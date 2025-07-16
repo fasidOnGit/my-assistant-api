@@ -3,9 +3,9 @@ import { createPineconeClient, initializePineconeIndex, PineconeDocumentIndex } 
 import { PersonalInfo } from '@/types';
 import { Pinecone } from '@pinecone-database/pinecone';
 import { uniqBy } from 'lodash-es';
-import { createDocumentChunks } from './textProcessingUtils';
+import { createDocumentChunks, summarizeDocument } from './textProcessingUtils';
 
-const CHUNK_SIZE = 512;
+const CHUNK_SIZE = 350;
 const CHUNK_OVERLAP = 80;
 const BATCH_SIZE = 100;
 
@@ -67,6 +67,7 @@ export async function createChunks(args: { userId: string; fileName: string; tex
  * @returns The number of chunks processed
  */
 export async function processTextFile(args: {
+	env: Cloudflare.Env;
 	sparseIndex: PineconeDocumentIndex;
 	denseIndex: PineconeDocumentIndex;
 	userId: string;
@@ -74,10 +75,15 @@ export async function processTextFile(args: {
 	text: string;
 	email: string;
 }) {
-	const { sparseIndex, denseIndex, userId, fileName, text, email } = args;
+	const { env, sparseIndex, denseIndex, userId, fileName, text, email } = args;
+	const documentSummary = await summarizeDocument({ env, text });
 
 	// Create chunks from the text
-	const chunks = await createDocumentChunks({ text, metadata: { userId, fileName, email } });
+	const chunks = await createDocumentChunks({
+		text,
+		metadata: { userId, fileName, email },
+		documentSummary: documentSummary.toString(),
+	});
 
 	// Upsert chunks to both indexes in batches
 	for (let i = 0; i < chunks.length; i += BATCH_SIZE) {
@@ -143,6 +149,7 @@ export async function embedFiles(args: { files: File[]; personalInfo: PersonalIn
 			console.log('Processing file', file.name);
 			const text = await file.text();
 			const chunksCount = await processTextFile({
+				env,
 				sparseIndex,
 				denseIndex,
 				fileName: file.name,
@@ -185,10 +192,10 @@ export async function searchQueriesHybrid(params: { pinecone: Pinecone; query: s
 	const reranked = await pinecone.inference.rerank(
 		'bge-reranker-v2-m3',
 		query,
-		merged.map((hit) => hit.chunk_text),
+		merged.map((hit) => (hit.fields as { chunk_text: string }).chunk_text),
 		{
 			returnDocuments: true,
-			topN: 20,
+			topN: 40,
 		}
 	);
 
