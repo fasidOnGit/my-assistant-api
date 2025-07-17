@@ -67,28 +67,26 @@ export async function createChunks(args: { userId: string; fileName: string; tex
  * @returns The number of chunks processed
  */
 export async function processTextFile(args: {
-	env: Cloudflare.Env;
-	sparseIndex: PineconeDocumentIndex;
-	denseIndex: PineconeDocumentIndex;
+	index: PineconeDocumentIndex;
 	userId: string;
 	fileName: string;
 	text: string;
 	email: string;
+	documentSummary?: string;
 }) {
-	const { env, sparseIndex, denseIndex, userId, fileName, text, email } = args;
-	const documentSummary = await summarizeDocument({ env, text });
+	const { index, userId, fileName, text, email, documentSummary } = args;
 
 	// Create chunks from the text
 	const chunks = await createDocumentChunks({
 		text,
 		metadata: { userId, fileName, email },
-		documentSummary: documentSummary.toString(),
+		documentSummary,
 	});
 
 	// Upsert chunks to both indexes in batches
 	for (let i = 0; i < chunks.length; i += BATCH_SIZE) {
 		const batch = chunks.slice(i, i + BATCH_SIZE);
-		await Promise.all([sparseIndex.upsertRecords(batch), denseIndex.upsertRecords(batch)]);
+		await index.upsertRecords(batch);
 	}
 
 	return chunks.length;
@@ -148,15 +146,17 @@ export async function embedFiles(args: { files: File[]; personalInfo: PersonalIn
 		files.map(async (file) => {
 			console.log('Processing file', file.name);
 			const text = await file.text();
-			const chunksCount = await processTextFile({
-				env,
-				sparseIndex,
-				denseIndex,
-				fileName: file.name,
-				text,
-				userId: personalInfo.email,
-				email: personalInfo.email,
-			});
+			const documentSummary = (await summarizeDocument({ env, text })).toString();
+			const [chunksCount] = await Promise.all([sparseIndex, denseIndex].map(async (index) => {
+				return await processTextFile({
+					index,
+					fileName: file.name,
+					text,
+					userId: personalInfo.email,
+					email: personalInfo.email,
+					documentSummary: index === denseIndex ? documentSummary : undefined,
+				});
+			}));
 
 			return {
 				fileName: file.name,
@@ -168,6 +168,8 @@ export async function embedFiles(args: { files: File[]; personalInfo: PersonalIn
 
 export async function searchQueriesHybrid(params: { pinecone: Pinecone; query: string }) {
 	const { pinecone, query } = params;
+
+	console.log('Query', query);
 
 	const sparseIndex = initializePineconeIndex(pinecone, 'documents-sparse');
 	const denseIndex = initializePineconeIndex(pinecone, 'documents');
@@ -187,6 +189,9 @@ export async function searchQueriesHybrid(params: { pinecone: Pinecone; query: s
 		}),
 	]);
 
+	console.log('Sparse Results', sparseResults);
+	console.log('Dense Results', denseResults);
+
 	// Deduplicate results based on id using uniqBy
 	const merged = uniqBy([...denseResults.result.hits, ...sparseResults.result.hits], '_id');
 	const reranked = await pinecone.inference.rerank(
@@ -195,11 +200,12 @@ export async function searchQueriesHybrid(params: { pinecone: Pinecone; query: s
 		merged.map((hit) => (hit.fields as { chunk_text: string }).chunk_text),
 		{
 			returnDocuments: true,
-			topN: 40,
+			topN: 10,
 		}
 	);
 
-	reranked.data;
+	console.log('Reranked', reranked.data);
+
 	return {
 		results: reranked.data,
 		sparseResults,

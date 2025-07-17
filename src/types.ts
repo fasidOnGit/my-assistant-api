@@ -1,3 +1,18 @@
+import type { BaseChatModel } from '@langchain/core/language_models/chat_models';
+import { BaseCheckpointSaver } from '@langchain/langgraph/web';
+import { Pinecone } from '@pinecone-database/pinecone';
+
+type HonoEnv = {
+	Bindings: Cloudflare.Env;
+	Variables: {
+		chatModel: BaseChatModel;
+		kvCheckpointSaver: BaseCheckpointSaver;
+		pinecone: Pinecone;
+	};
+};
+
+export type { HonoEnv };
+
 export interface PersonalInfo {
 	name: string;
 	title: string[];

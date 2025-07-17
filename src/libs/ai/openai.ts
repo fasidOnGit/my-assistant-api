@@ -1,12 +1,28 @@
 import { OpenAI } from 'openai';
 import { configurations } from './configurations';
+import { ChatOpenAI } from '@langchain/openai';
 
-const OPENAI_BASE_URL = 'https://gateway.ai.cloudflare.com/v1/0c3eee58953174451139be1ea94076a8/stock-predictions/openai';
+export const openaiConfigurations = {
+	model: 'gpt-3.5-turbo',
+	temperature: 0.2,
+	apiGateway: 'https://gateway.ai.cloudflare.com/v1/0c3eee58953174451139be1ea94076a8/stock-predictions/openai',
+};
 
 export function createOpenAIClient(env: Cloudflare.Env) {
 	return new OpenAI({
 		apiKey: env.OPENAI_API_KEY,
-		baseURL: OPENAI_BASE_URL,
+		baseURL: openaiConfigurations.apiGateway,
+	});
+}
+
+export function createOpenAIChatModel(apiKey: string) {
+	return new ChatOpenAI({
+		apiKey,
+		model: openaiConfigurations.model,
+		temperature: openaiConfigurations.temperature,
+		configuration: {
+			baseURL: openaiConfigurations.apiGateway,
+		},
 	});
 }
 

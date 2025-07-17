@@ -1,30 +1,43 @@
+import { setupAgent } from '@/libs/ai/agent';
+import { HumanMessage } from '@langchain/core/messages';
+import type { HonoEnv } from '@/types';
 import type { Context } from 'hono';
-import { searchQueriesHybrid } from '@/libs/document/documentProcessor';
-import { createPineconeClient } from '@/libs/vectorstore/pinecone';
 
-export async function handleSearch(c: Context<{ Bindings: Cloudflare.Env }>) {
-  try {
-    const query = c.req.query('q');
-    
-    if (!query) {
-      return c.json({ error: 'Query parameter "q" is required' }, 400);
-    }
+export async function handleSearch(c: Context<HonoEnv>) {
+	try {
+		const query = c.req.query('q');
+		const agent = await setupAgent(c);
+		const kvCheckpointSaver = c.get('kvCheckpointSaver');
 
-    const pinecone = createPineconeClient(c.env);
-    const results = await searchQueriesHybrid({
-      pinecone,
-      query,
-    });
+		if (!query) {
+			return c.json({ error: 'Query parameter "q" is required' }, 400);
+		}
 
-    return c.json({
-      success: true,
-      ...results,
-    });
-  } catch (error) {
-    console.error('Error searching:', error);
-    return c.json({ 
-      error: 'Failed to perform search',
-      details: error instanceof Error ? error.message : 'Unknown error'
-    }, 500);
-  }
-} 
+		const threadId = c.req.header('x-conversation-id') || crypto.randomUUID();
+		const response = await agent.invoke(
+			{
+				messages: [new HumanMessage(query)],
+			},
+			{
+				configurable: {
+					thread_id: threadId,
+				},
+			}
+		);
+
+		return c.json({
+			success: true,
+			results: response.messages.at(-1)?.content,
+			threadId,
+		});
+	} catch (error) {
+		console.error('Error searching:', error);
+		return c.json(
+			{
+				error: 'Failed to perform search',
+				details: error instanceof Error ? error.message : 'Unknown error',
+			},
+			500
+		);
+	}
+}

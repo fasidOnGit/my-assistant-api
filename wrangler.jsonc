@@ -15,8 +15,14 @@
 	"compatibility_date": "2024-09-23",
 	"kv_namespaces": [
 		{
-		"binding": "users",
-		"id": "bcfcca00a0cb4a499d9943ffc1e2a929"
+			"binding": "users",
+			"id": "bcfcca00a0cb4a499d9943ffc1e2a929",
+			"preview_id": "dev-users-preview-namespace"
+		},
+		{
+			"binding": "checkpoints",
+			"id": "96315802cc4844b086836af3d5a78a91",
+			"preview_id": "dev-checkpoints-preview-namespace"
 		}
 	]
 	/**

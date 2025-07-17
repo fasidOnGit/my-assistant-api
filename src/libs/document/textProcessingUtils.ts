@@ -29,7 +29,7 @@ export async function createDocumentChunks(args: {
 	metadata: TextChunkMetadata;
 	chunkSize?: number;
 	chunkOverlap?: number;
-	documentSummary: string;
+	documentSummary?: string;
 }) {
 	const { text, metadata, chunkSize = 1024, chunkOverlap = 100, documentSummary } = args;
 
@@ -85,7 +85,7 @@ export async function createDocumentChunks(args: {
 
 interface ChunkFormatOptions {
 	chunk_text: string;
-	summary: string;
+	summary?: string;
 	heading: string;
 }
 
@@ -96,10 +96,13 @@ interface ChunkFormatOptions {
  */
 export function formatChunkWithContext(options: ChunkFormatOptions): string {
 	const { chunk_text, summary, heading } = options;
-	return `Summary: ${summary.trim()}
-Heading: ${heading.trim()}
-
-${chunk_text.trim()}`;
+	const lines = [
+		summary ? `Summary: ${summary.trim()}` : null,
+		heading ? `Heading: ${heading.trim()}` : null,
+		'',
+		chunk_text.trim(),
+	].filter(Boolean);
+	return lines.join('\n');
 }
 
 /**
