@@ -10,6 +10,6 @@ app.use('*', corsMiddleware);
 app.use('*', attachGlobalMiddlewares);
 
 app.post('/ingest-profile', handleProfileIngestion);
-app.get('/search', handleSearch);
+app.get('/ask', handleSearch);
 
 export default app;
